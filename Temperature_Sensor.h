@@ -1,3 +1,4 @@
+#include <stdint.h>
 #ifndef Temperature_Sensor_h
 #define Temperature_Sensor_h
 
@@ -8,6 +9,7 @@
 
 class Temperature_Sensor {
   public:
+    Temperature_Sensor(uint8_t sensorAddress);
     Temperature_Sensor(uint8_t sensorAddress, int highTempAlarm, int lowTempAlarm);
 
   private:

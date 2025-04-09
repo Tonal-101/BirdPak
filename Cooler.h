@@ -5,14 +5,16 @@
 
 class Cooler {
   public:
-    Cooler(int coolerPin, int fanPin);
+    Cooler(int coolerPin, int fanTogglePin);
+    Cooler(int coolerPin, int fanTogglePin, int fanPwmPin);
     void toggleCooler(bool onOff);
     void toggleFan(bool onOff);
-    void changeFanSpeed(int rpm)
+    void changeFanSpeed(int percent)
 
   private:
     int _coolerPin;
-    int _fanPin;
+    int _fanTogglePin;
+    int _fanPwmPin;
 };
 
 

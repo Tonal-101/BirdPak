@@ -5,13 +5,17 @@
 
 class Heater {
   public:
-    Heater(int heaterPin, int fanPin);
+    Heater(int heaterPin, int fanTogglePin);
+    Heater(int heaterPin, int fanTogglePin, int fanPwmPin);
+
     void toggleHeater(bool onOff);
     void toggleFan(bool onOff);
+    void changeFanSpeed(int percent);
 
   private:
     int _heaterPin;
-    int _fanPin;
+    int _fanTogglePin;
+    int _fanPwmPin;
 };
 
 
