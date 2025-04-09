@@ -9,15 +9,23 @@
 
 class Temperature_Sensor {
   public:
-    Temperature_Sensor(uint8_t sensorAddress);
-    Temperature_Sensor(uint8_t sensorAddress, int highTempAlarm, int lowTempAlarm);
+    Temperature_Sensor();
+    Temperature_Sensor(uint8_t sensorAddress[8]);
+    Temperature_Sensor(uint8_t sensorAddress[8], int highTempAlarmF, int lowTempAlarmF);
+    void initializeSensors();
+    void requestTemperatures();
+    int getTempF();
+    int getTempC();
+    int getTempK();
+
+    int getHighTempThreshold();
+    int getLowTempThreshold();
 
   private:
-    void initializeSensors();
 
     int _highTempAlarm;
     int _lowTempAlarm;
-    uint8_t _sensorAddress;
+    uint8_t _sensorAddress[8];
 
     OneWire oneWire;
     DallasTemperature sensors;

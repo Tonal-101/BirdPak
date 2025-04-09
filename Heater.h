@@ -9,7 +9,7 @@ class Heater {
     Heater(int heaterPin, int fanTogglePin_heater, int fanPwmPin_heater);
 
     void toggleHeater(bool onOff);
-    void toggleFan(bool onOff);
+    void toggleHeaterFan(bool onOff);
     void changeFanSpeed(int percent);
 
   private:

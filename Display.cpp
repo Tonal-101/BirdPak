@@ -18,7 +18,7 @@
 // ~~~~~~~~~~~~~~~~~~~~~~~~
 
 // Speaker ~~~~~~~~~~~~~~~~
-Speaker speaker(3); // speaker connected to digital pin 3
+Speaker alarmSpeaker(3); // speaker connected to digital pin 3
 // ~~~~~~~~~~~~~~~~~~~~~~~~
 
 // Display Calibration ~~~~
@@ -78,10 +78,7 @@ int _otValue_Y       = MARGIN_TOP + _tt_Height + MARGIN_WIDE + _ct_Height + MARG
 //~~~~ END DISPLAY ORGANIZATION ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 
-Display::Display() {
-  tft.begin();
-  _initializeDisplay();
-}
+Display::Display() { }
 
 void Display::redBtnPushed() {
   // Swaps colors on click:
@@ -108,6 +105,29 @@ void Display::blueBtnPushed() {
   // minus sign
   tft.fillRect(188, 234, 39, 14, 0x0000); // white border; minus sign
   tft.fillRect(190, 236, 35, 10, 0x00ad); // minus sign
+}
+
+bool Display::isBtnPushed(int x1, int y1, int x2, int y2) {
+  uint16_t x, y, z1, z2;
+  if (ts.read_touch(&x, &y, &z1, &z2) && (z1 > TS_MIN_PRESSURE)) {
+
+    Serial.print("Touch point: (");
+    Serial.print(x); Serial.print(", ");
+    Serial.print(y); Serial.print(", ");
+    Serial.print(z1); Serial.print(" / ");
+    Serial.print(z2); Serial.println(")");  
+   
+    // Scale from ~0->4000 to tft.width using the calibration #'s
+    x = map(x, TS_MINX, TS_MAXX, 0, tft.width());
+    y = map(y, TS_MINY, TS_MAXY, 0, tft.height());
+
+    // if detected pressure is within bounding box, return true
+    if(x > x1 && y > y1 && x < x2 && y < y2) {
+      return true;
+    } else {
+      return false;
+    }
+  } else { return false; }
 }
 
 void Display::updateDisplay_btnRed() {
@@ -203,7 +223,7 @@ void Display::alarm(String errorCode) {
     tft.setTextSize(4);
     tft.setTextColor(BLACK);
     tft.print("DANGER"); // 36px by 7px
-    speaker.notif_warning();
+    alarmSpeaker.notif_warning();
     delay(300);
 
     tft.fillRect(111, 113, 18, 57, BLACK); // Exclamation point inside triangle
@@ -213,15 +233,17 @@ void Display::alarm(String errorCode) {
     tft.setTextSize(4);
     tft.setTextColor(RED);
     tft.print("DANGER"); // 36px by 7px
-    speaker.notif_warning();
+    alarmSpeaker.notif_warning();
     delay(400);
 
     loopCounter++;
   }
-  _initializeDisplay(); // restarts display after loop ends
+  initializeDisplay(); // restarts display after loop ends
 }
 
-void Display::_initializeDisplay() {
+void Display::initializeDisplay() {
+  tft.begin();
+
   if (!ts.begin()) {
     Serial.println("Couldn't start touchscreen controller");
     while (1);

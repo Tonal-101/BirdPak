@@ -1,8 +1,8 @@
 #include <Arduino.h>
 #include "Cooler.h"
 
-#define OFF true
-#define ON false
+#define OFF false
+#define ON true
 
 int _coolerPin;    // output pin that controls the cooler
 int _fanTogglePin_cooler; // output pin that toggles fan on/off
@@ -32,7 +32,7 @@ void Cooler::toggleCooler(bool onOff) {
   digitalWrite(_coolerPin, onOff);
 }
 
-void Cooler::toggleFan(bool onOff) {
+void Cooler::toggleCoolerFan(bool onOff) {
   digitalWrite(_fanTogglePin_cooler, onOff);
 }
 

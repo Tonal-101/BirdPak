@@ -8,7 +8,7 @@ class Cooler {
     Cooler(int coolerPin, int fanTogglePin_cooler);
     Cooler(int coolerPin, int fanTogglePin_cooler, int fanPwmPin_cooler);
     void toggleCooler(bool onOff);
-    void toggleFan(bool onOff);
+    void toggleCoolerFan(bool onOff);
     void changeFanSpeed(int percent);
 
   private:

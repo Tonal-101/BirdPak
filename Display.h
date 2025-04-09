@@ -11,8 +11,11 @@
 class Display {
   public:
     Display();
+    void initializeDisplay();
     void redBtnPushed();
     void blueBtnPushed();
+
+    bool isBtnPushed(int x1, int y1, int x2, int y2);
 
     void updateDisplay_btnRed();
     void updateDisplay_btnBlue();
@@ -25,7 +28,6 @@ class Display {
     void alarm(String errorCode);
 
   private:
-    void _initializeDisplay();
     int _ttHeader_Size;
     int _ttHeader_Height;
     int _ttValue_Size;

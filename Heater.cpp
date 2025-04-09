@@ -1,8 +1,8 @@
 #include <Arduino.h>
 #include "Heater.h"
 
-#define OFF true
-#define ON false
+#define OFF false
+#define ON true
 
 int _heaterPin;    // output pin that controls the heater
 int _fanTogglePin_heater; // output pin that toggles heater fan on/off
@@ -32,7 +32,7 @@ void Heater::toggleHeater(bool onOff) {
   digitalWrite(_heaterPin, onOff);
 }
 
-void Heater::toggleFan(bool onOff) {
+void Heater::toggleHeaterFan(bool onOff) {
   digitalWrite(_fanTogglePin_heater, onOff);
 }
 
