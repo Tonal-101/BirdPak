@@ -13,10 +13,14 @@ class Temperature_Sensor {
     Temperature_Sensor(uint8_t sensorAddress, int highTempAlarm, int lowTempAlarm);
 
   private:
-    void _initializeSensors();
+    void initializeSensors();
+
     int _highTempAlarm;
     int _lowTempAlarm;
     uint8_t _sensorAddress;
+
+    OneWire oneWire;
+    DallasTemperature sensors;
 };
 
 #endif

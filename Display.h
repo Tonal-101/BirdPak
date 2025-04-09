@@ -17,10 +17,10 @@ class Display {
     void updateDisplay_btnRed();
     void updateDisplay_btnBlue();
 
-    void updateDisplay_currentTemp();
-    void updateDisplay_outdoorTemp();
-    void updateDisplay_targetTemp();
-    void updateDisplay_timeToTemp();
+    void updateDisplay_indoorTemp(int indoorTemp);
+    void updateDisplay_outdoorTemp(int outdoorTemp);
+    void updateDisplay_targetTemp(int targetTemp);
+    void updateDisplay_timeToTemp(int timeToTemp);
 
     void alarm(String errorCode);
 
@@ -44,4 +44,6 @@ class Display {
     int _otValue_Size;
     int _otValue_Height;
     int _otValue_Y;
-}
+};
+
+#endif

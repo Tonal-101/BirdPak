@@ -2,34 +2,44 @@
 #include <OneWire.h>
 #include <DallasTemperature.h>
 #include <Wire.h>
+#include "Temperature_Sensor.h"
+
+#define ONE_WIRE_BUS 4
 
 uint8_t _sensorAddress;
 int _highTempAlarm;
 int _lowTempAlarm;
 
-Temperature_Sensor::TemperatureSensor(uint8_t sensorAddress) {
+// Constructor initializer list for OneWire and DallasTemperature
+Temperature_Sensor::Temperature_Sensor(uint8_t sensorAddress)
+  : oneWire(ONE_WIRE_BUS), sensors(&oneWire)
+{
   _sensorAddress = sensorAddress;
   sensors.begin();
-  _initializeSensors();
+  initializeSensors();
 }
 
-Temperature_Sensor::Temperature_Sensor(uint8_t sensorAddress, int highTempAlarm, int lowTempAlarm) {
+
+Temperature_Sensor::Temperature_Sensor(uint8_t sensorAddress, int highTempAlarm, int lowTempAlarm)
+  : oneWire(ONE_WIRE_BUS), sensors(&oneWire)
+{
   _sensorAddress = sensorAddress;
   _highTempAlarm = highTempAlarm;
   _lowTempAlarm = lowTempAlarm;
 
-  _initializeSensors();
+  sensors.begin();
+  initializeSensors();
 }
 
-void Temperature_Sensor::_initializeSensors() {
+void Temperature_Sensor::initializeSensors() {
   //~~~~~~~~~~~~~[ Sensor setup ]~~~~~~~~~~~~~//
-  // Data wire is plugged into port 4 on the Arduino
-  #define ONE_WIRE_BUS 4
-  // Setup a oneWire instance to communicate with any OneWire devices (not just Maxim/Dallas temperature ICs)
-  OneWire oneWire(ONE_WIRE_BUS);
+  // // Data wire is plugged into port 4 on the Arduino
+  // #define ONE_WIRE_BUS 4
+  // // Setup a oneWire instance to communicate with any OneWire devices (not just Maxim/Dallas temperature ICs)
+  // OneWire oneWire(ONE_WIRE_BUS);
 
-  // Pass our oneWire reference to Dallas Temperature. 
-  DallasTemperature sensors(&oneWire);
+  // // Pass our oneWire reference to Dallas Temperature. 
+  // DallasTemperature sensors(&oneWire);
 
   int numberOfDevices; // Number of temperature devices found
   DeviceAddress tempDeviceAddress; // We'll use this variable to store a found device address

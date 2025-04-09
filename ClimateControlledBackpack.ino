@@ -1,8 +1,8 @@
-#include <Heater.h>
-#include <Cooler.h>
-#include <Speaker.h>
-#include <Temperature_Sensor.h>
-#include <Display.h>
+#include "Heater.h"
+#include "Cooler.h"
+#include "Speaker.h"
+#include "Temperature_Sensor.h"
+#include "Display.h"
 
 
 // Variables for Temperature Sensors ~~~~~~~~~~~~
@@ -28,7 +28,7 @@
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 // Variables for Speaker ~~~~~~~~~~~~~~~~~~~~~~~~
-  int speakerPin   = A1; // output pin that controls the onboard passive buzzer
+  int speakerPin   = 3; // output pin that controls the onboard passive buzzer
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 // General Temperature Variables ~~~~~~~~~~~~~~~~
@@ -52,7 +52,7 @@ int  timeToTemp; // estimated time until enclosure reaches the target temperatur
 
 void setup() {
   Serial.begin(115200);
-  
+
 }
 
 void loop() {

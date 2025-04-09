@@ -5,6 +5,9 @@
 #include <Adafruit_ILI9341.h>
 #include <Adafruit_TSC2007.h>
 
+#include "Display.h"
+#include "Speaker.h"
+
 // Colors ~~~~~~~~~~~~~~~~~
 #define RED         0x9003
 #define BLACK       0x0000
@@ -12,6 +15,10 @@
 #define LIGHT_BLUE  0x07df
 #define DARK_BLUE   0x037F
 #define DARK_RED    0xD004
+// ~~~~~~~~~~~~~~~~~~~~~~~~
+
+// Speaker ~~~~~~~~~~~~~~~~
+Speaker speaker(3); // speaker connected to digital pin 3
 // ~~~~~~~~~~~~~~~~~~~~~~~~
 
 // Display Calibration ~~~~
@@ -122,19 +129,19 @@ void Display::updateDisplay_btnBlue() {
   tft.fillRect(190, 236, 35, 10, 0x0000); // minus sign
 }
 
-void Display::updateDisplay_currentTemp() {
+void Display::updateDisplay_indoorTemp(int indoorTemp) {
   tft.fillRect(20, 125, 8*6*3, 3*7, 0x0000); // Erases on-screen current temp value
   
   // Current Temp
   tft.setCursor(20, 125);
   tft.setTextSize(3);
   tft.setTextColor(0xFFFF);
-  tft.print(String(currentTemp));
+  tft.print(String(indoorTemp));
   tft.write(0xF7);
   tft.print("F");
 }
 
-void Display::updateDisplay_outdoorTemp() {
+void Display::updateDisplay_outdoorTemp(int outdoorTemp) {
   tft.fillRect(20, 186, 8*6*3, 3*7, 0x0000); // Erases on-screen outdoor temp value
   
   // Outdoor Temp
@@ -146,7 +153,7 @@ void Display::updateDisplay_outdoorTemp() {
   tft.print("F");
 }
 
-void Display::updateDisplay_targetTemp() {
+void Display::updateDisplay_targetTemp(int targetTemp) {
   tft.fillRect(20, 36, 152, 6*7, 0x0000);    // Erases on-screen target temp value
 
   // Target Temp
@@ -158,7 +165,7 @@ void Display::updateDisplay_targetTemp() {
   tft.print("F");
 }
 
-void Display::updateDisplay_timeToTemp() {
+void Display::updateDisplay_timeToTemp(int timeToTemp) {
   tft.fillRect(10, 240, 160, 14, 0x0000);
 
   tft.setCursor(10, 220);
@@ -187,8 +194,8 @@ void Display::alarm(String errorCode) {
   tft.setTextColor(BLACK);
   tft.print("Error: " + errorCode);
 
-  while(currentTemp >= HIGH_TEMP_ALARM || currentTemp <= LOW_TEMP_ALARM) { // keep playing alarm until temperature reaches OK level
-    getCurrentTemp(); // fetch latest currentTemp value
+  int loopCounter = 0;
+  while(loopCounter < 8) { // plays alarm 8 times; main class can then call this alarm() method again if temps are still not safe
     tft.fillRect(111, 113, 18, 57, RED); // Exclamation point inside triangle
     tft.fillRect(111, 177, 18, 18, RED); // Exclamation point inside triangle
 
@@ -196,7 +203,7 @@ void Display::alarm(String errorCode) {
     tft.setTextSize(4);
     tft.setTextColor(BLACK);
     tft.print("DANGER"); // 36px by 7px
-    notif_warning();
+    speaker.notif_warning();
     delay(300);
 
     tft.fillRect(111, 113, 18, 57, BLACK); // Exclamation point inside triangle
@@ -206,10 +213,12 @@ void Display::alarm(String errorCode) {
     tft.setTextSize(4);
     tft.setTextColor(RED);
     tft.print("DANGER"); // 36px by 7px
-    notif_warning();
+    speaker.notif_warning();
     delay(400);
+
+    loopCounter++;
   }
-  _initializeDisplay(); // restarts display after reaching nominal temps
+  _initializeDisplay(); // restarts display after loop ends
 }
 
 void Display::_initializeDisplay() {
