@@ -1,16 +1,19 @@
 #include "Heater.h"
 #include "Cooler.h"
 #include "Speaker.h"
-#include "Temperature_Sensor.h"
 #include "Display.h"
+#include <OneWire.h>
+#include <DallasTemperature.h>
 
 
 // Variables for Button Bounding Boxes ~~~~~~~~~~
+  // For temperature increment button
   int redBtn_x1 = 160;
   int redBtn_y1 = 0;
   int redBtn_x2 = 240;
   int redBtn_y2 = 160;
 
+  // For temperature decrement button
   int blueBtn_x1 = 160;
   int blueBtn_y1 = 160;
   int blueBtn_x2 = 240;
@@ -26,6 +29,17 @@
 
   int tempThresholdF_high = 100; // in *F
   int tempThresholdF_low  = 50;  // in *F
+
+  // Data wire is plugged into port 4 on the Arduino
+  #define ONE_WIRE_BUS 4
+  // Setup a oneWire instance to communicate with any OneWire devices (not just Maxim/Dallas temperature ICs)
+  OneWire oneWire(ONE_WIRE_BUS);
+
+  // Pass our oneWire reference to Dallas Temperature. 
+  DallasTemperature sensors(&oneWire);
+
+  int numberOfDevices; // Number of temperature devices found
+  DeviceAddress tempDeviceAddress; // We'll use this variable to store a found device address
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 // Variables for Heater ~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -48,52 +62,41 @@
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 // General Temperature Variables ~~~~~~~~~~~~~~~~
-#define OFF false
-#define ON true
+  #define OFF false
+  #define ON true
 
-int targetTemp = 71; // default target temp (*F)
+  int targetTemp = 71; // default target temp (*F)
 
-int indoorTemp; // current temp inside enclosure
-int outdoorTemp; // current temp outside enclosure
+  int indoorTemp; // current temp inside enclosure
+  int outdoorTemp; // current temp outside enclosure
 
-// These are used to determine if the display needs to be refreshed
-int targetTemp_prev;
-int indoorTemp_prev;
-int outdoorTemp_prev;
+  // These are used to determine if the display needs to be refreshed
+  int targetTemp_prev;
+  int indoorTemp_prev;
+  int outdoorTemp_prev;
 
-bool targetTempChanged;   // 'true' if current temperature is different from previous temperature
-bool indoorTempChanged;   // ^^^
-bool outdoorTempChanged;  // ^^^
+  int highTempThreshold = 95; // *F
+  int lowTempThreshold  = 45; // *F
 
-int highTempThreshold = 95; // *F
-int lowTempThreshold  = 45; // *F
-
-int  timeToTemp; // estimated time until enclosure reaches the target temperature
+  int  timeToTemp; // estimated time until enclosure reaches the target temperature
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
 
 // Objects ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   Display display;
   Heater heater(heaterPin, heaterFanPin);
   Cooler cooler(coolerPin, coolerFanPin);
   Speaker speaker(speakerPin);
-
-  Temperature_Sensor allSensors;
-  Temperature_Sensor indoorSensor(sensorAddress_indoor, tempThresholdF_high, tempThresholdF_low);
-  Temperature_Sensor outdoorSensor(sensorAddress_outdoor);
-  Temperature_Sensor heaterSensor(sensorAddress_heater);
-  Temperature_Sensor coolerSensor(sensorAddress_cooler);
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 void setup() {
   Serial.begin(115200);
-  // pinMode(4, INPUT_PULLUP);
+  sensors.begin();
+  initializeSensors();
   display.initializeDisplay();
-  allSensors.initializeSensors();
 }
 
 void loop() {
-  // allSensors.requestTemperatures();
+  sensors.requestTemperatures();
 
   // Shift old temp readings to -Temp_prev variables
   targetTemp_prev = targetTemp;
@@ -101,18 +104,57 @@ void loop() {
   outdoorTemp_prev = outdoorTemp;
 
   // Get new temp readings
-  indoorTemp = indoorSensor.getTempF();
-  outdoorTemp = outdoorSensor.getTempF();
-  heaterTemp = heaterSensor.getTempF();
-  coolerTemp = coolerSensor.getTempF();
+  indoorTemp = sensors.getTempF(sensorAddress_indoor);
+  outdoorTemp = sensors.getTempF(sensorAddress_outdoor);
+  heaterTemp = sensors.getTempF(sensorAddress_heater);
+  coolerTemp = sensors.getTempF(sensorAddress_cooler);
 
-  if(indoorTemp >= 95) { 
-    // display.alarm("Hi Temps"); 
+  if(indoorTemp >= highTempThreshold) { 
+    display.alarm("Hi Temps"); 
   }
-  if(indoorTemp <= 45) { 
-    // display.alarm("Lo Temps");
+  if(indoorTemp <= lowTempThreshold) { 
+    display.alarm("Lo Temps");
   }
 
+  checkBtnPresses();
+  checkReachedTargetTemp(); // Turns on/off cooler and heater as needed
+
+  if(indoorTemp != indoorTemp_prev)   { display.updateDisplay_indoorTemp(indoorTemp);   }
+  if(outdoorTemp != outdoorTemp_prev) { display.updateDisplay_outdoorTemp(outdoorTemp); }
+  if(targetTemp != targetTemp_prev)   { display.updateDisplay_targetTemp(targetTemp);   }
+}
+
+void initializeSensors() {
+  // Sensor setup
+  numberOfDevices = sensors.getDeviceCount();
+
+  // locate devices on the bus
+  Serial.print("Locating devices...");
+  Serial.print("Found ");
+  Serial.print(numberOfDevices, DEC);
+  Serial.println(" devices.");
+
+  // Loop through each device, print out address
+  for(int i=0;i<numberOfDevices; i++) {
+    // Search the wire for address
+    if(sensors.getAddress(tempDeviceAddress, i)) {
+      Serial.print("Found device ");
+      Serial.print(i, DEC);
+      Serial.print(" with address: ");
+      // printAddress(tempDeviceAddress);
+      Serial.println();
+		} else {
+		  Serial.print("Found ghost device at ");
+		  Serial.print(i, DEC);
+		  Serial.print(" but could not detect address. Check power and cabling");
+		}
+  }
+
+  // setHighAlarmTemp(HIGH_TEMP_ALARM);
+  // setLowAlarmTemp(LOW_TEMP_ALARM);
+}
+
+void checkBtnPresses() {
   // Check if buttons are pressed
   if(display.isBtnPushed(redBtn_x1, redBtn_y1, redBtn_x2, redBtn_y2)) {
     targetTemp++;
@@ -129,7 +171,9 @@ void loop() {
     delay(50); // retain pushed-button-look for 50ms
     display.updateDisplay_btnBlue();
   }
+}
 
+void checkReachedTargetTemp() {
   if(indoorTemp == targetTemp) { 
     if(playNotif) { 
       speaker.notif_tempReached(); // notify user when target temp is reached
@@ -137,8 +181,9 @@ void loop() {
     } 
     heater.toggleHeater(OFF);
     cooler.toggleCooler(OFF);
-  } else if(indoorTemp < targetTemp - 3) {
+  } else if(indoorTemp < targetTemp - 3) { // If too cold, turn on heater + heater fan
     // If inside is 3*F colder than target, turn on heater, turn off cooler
+
     // Why 3*F exactly? Because 5*F seemed like too much, and I sure as hell
     // don't want the heater and cooler flipping on and off for split seconds
     heater.toggleHeater(ON);
@@ -147,7 +192,7 @@ void loop() {
     cooler.toggleCooler(OFF);
     cooler.toggleCoolerFan(OFF);
     playNotif = true;
-  } else if(indoorTemp > targetTemp + 3) {
+  } else if(indoorTemp > targetTemp + 3) { // If too hot, turn on cooler + cooler fan
     // if inside is 3*F hotter than target, turn off heater, turn on cooler
     cooler.toggleCooler(ON);
     cooler.toggleCoolerFan(ON);
@@ -156,13 +201,7 @@ void loop() {
     heater.toggleHeaterFan(OFF);
     playNotif = true;
   }
-
-  if(indoorTemp != indoorTemp_prev)   { display.updateDisplay_indoorTemp(indoorTemp);   }
-  if(outdoorTemp != outdoorTemp_prev) { display.updateDisplay_outdoorTemp(outdoorTemp); }
-  if(targetTemp != targetTemp_prev)   { display.updateDisplay_targetTemp(targetTemp);   }
 }
-
-
 
 void updateTimeToTemp() {
   float m = 0.0322;
