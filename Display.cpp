@@ -13,6 +13,7 @@
 #define BLACK       0x0000
 #define BLUE        0x015b
 #define LIGHT_BLUE  0x07df
+#define SKY_BLUE    0x9E9D
 #define DARK_BLUE   0x037F
 #define DARK_RED    0xD004
 // ~~~~~~~~~~~~~~~~~~~~~~~~
@@ -107,6 +108,21 @@ void Display::blueBtnPushed() {
   tft.fillRect(190, 236, 35, 10, 0x00ad); // minus sign
 }
 
+void Display::monitorModeBtnPushed() {
+  // MonitorMode button
+  tft.fillRoundRect(10, 225, 155, 50, 4, SKY_BLUE);
+  tft.fillRoundRect(15, 230, 145, 40, 4, BLUE);
+  tft.fillRect(54, 241, 30, 6, SKY_BLUE);
+  tft.fillCircle(54, 250, 12, SKY_BLUE);
+  tft.fillCircle(85, 250, 12, SKY_BLUE);
+  tft.fillCircle(54, 250, 9, BLUE);
+  tft.fillCircle(85, 250, 9, BLUE);
+  tft.setCursor(104, 243);
+  tft.setTextColor(0xFFFF);
+  tft.setTextSize(2);
+  tft.print("ON");
+}
+
 bool Display::isBtnPushed(int x1, int y1, int x2, int y2) {
   uint16_t x, y, z1, z2;
   if (ts.read_touch(&x, &y, &z1, &z2) && (z1 > TS_MIN_PRESSURE)) {
@@ -147,6 +163,21 @@ void Display::updateDisplay_btnBlue() {
   // Minus sign
   tft.fillRect(188, 234, 39, 14, 0xb7df); // white border; minus sign
   tft.fillRect(190, 236, 35, 10, 0x0000); // minus sign
+}
+
+void Display::updateDisplay_btnMonitorMode() {
+  // MonitorMode button
+  tft.fillRoundRect(10, 225, 155, 50, 4, BLUE);
+  tft.fillRoundRect(15, 230, 145, 40, 4, SKY_BLUE);
+  tft.fillRect(49, 241, 30, 6, BLUE);
+  tft.fillCircle(49, 250, 12, BLUE);
+  tft.fillCircle(80, 250, 12, BLUE);
+  tft.fillCircle(49, 250, 9, SKY_BLUE);
+  tft.fillCircle(80, 250, 9, SKY_BLUE);
+  tft.setCursor(99, 243);
+  tft.setTextColor(BLACK);
+  tft.setTextSize(2);
+  tft.print("OFF");
 }
 
 void Display::updateDisplay_indoorTemp(int indoorTemp) {
@@ -224,7 +255,7 @@ void Display::alarm(String errorCode) {
     tft.setTextColor(BLACK);
     tft.print("DANGER"); // 36px by 7px
     alarmSpeaker.notif_warning();
-    delay(300);
+    delay(100);
 
     tft.fillRect(111, 113, 18, 57, BLACK); // Exclamation point inside triangle
     tft.fillRect(111, 177, 18, 18, BLACK); // Exclamation point inside triangle
@@ -234,7 +265,7 @@ void Display::alarm(String errorCode) {
     tft.setTextColor(RED);
     tft.print("DANGER"); // 36px by 7px
     alarmSpeaker.notif_warning();
-    delay(400);
+    delay(100);
 
     loopCounter++;
   }
@@ -317,4 +348,17 @@ void Display::initializeDisplay() {
   tft.print("--");
   tft.write(0xF7);
   tft.print("F");
+
+  // MonitorMode button
+  tft.fillRoundRect(10, 225, 155, 50, 4, BLUE);
+  tft.fillRoundRect(15, 230, 145, 40, 4, SKY_BLUE);
+  tft.fillRect(49, 241, 30, 6, BLUE);
+  tft.fillCircle(49, 250, 12, BLUE);
+  tft.fillCircle(80, 250, 12, BLUE);
+  tft.fillCircle(49, 250, 9, SKY_BLUE);
+  tft.fillCircle(80, 250, 9, SKY_BLUE);
+  tft.setCursor(99, 243);
+  tft.setTextColor(BLACK);
+  tft.setTextSize(2);
+  tft.print("OFF");
 }

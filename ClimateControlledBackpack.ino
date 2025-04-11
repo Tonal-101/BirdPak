@@ -18,6 +18,12 @@
   int blueBtn_y1 = 160;
   int blueBtn_x2 = 240;
   int blueBtn_y2 = 320;
+
+  // For monitor mode button
+  int monitorModeBtn_x1 = 10;
+  int monitorModeBtn_y1 = 225;
+  int monitorModeBtn_x2 = 165;
+  int monitorModeBtn_y2 = 275;
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 // Variables for Temperature Sensors ~~~~~~~~~~~~
@@ -79,6 +85,10 @@
   int lowTempThreshold  = 45; // *F
 
   int  timeToTemp; // estimated time until enclosure reaches the target temperature
+// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+// Monitor Mode Variables ~~~~~~~~~~~~~~~~~~~~~~~
+  bool isMonitorModeOn;
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 // Objects ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -171,6 +181,20 @@ void checkBtnPresses() {
     delay(50); // retain pushed-button-look for 50ms
     display.updateDisplay_btnBlue();
   }
+
+  if(display.isBtnPushed(monitorModeBtn_x1, monitorModeBtn_y1, monitorModeBtn_x2, monitorModeBtn_y2)) {
+    if(!isMonitorModeOn) {
+      // If monitor mode is off, turn on monitor mode and keep button pushed
+      isMonitorModeOn = true;
+      display.monitorModeBtnPushed();
+      speaker.notif_monitorMode();
+    } else if(isMonitorModeOn) {
+      // If monitor mode is on, turn off monitor mode and release button push
+      isMonitorModeOn = false;
+      display.updateDisplay_btnMonitorMode();
+      speaker.notif_tempReached();
+    }
+  }
 }
 
 void checkReachedTargetTemp() {
@@ -181,7 +205,7 @@ void checkReachedTargetTemp() {
     } 
     heater.toggleHeater(OFF);
     cooler.toggleCooler(OFF);
-  } else if(indoorTemp < targetTemp - 3) { // If too cold, turn on heater + heater fan
+  } else if(indoorTemp < targetTemp - 3 && !isMonitorModeOn) { // If too cold, turn on heater + heater fan
     // If inside is 3*F colder than target, turn on heater, turn off cooler
 
     // Why 3*F exactly? Because 5*F seemed like too much, and I sure as hell
@@ -192,7 +216,7 @@ void checkReachedTargetTemp() {
     cooler.toggleCooler(OFF);
     cooler.toggleCoolerFan(OFF);
     playNotif = true;
-  } else if(indoorTemp > targetTemp + 3) { // If too hot, turn on cooler + cooler fan
+  } else if(indoorTemp > targetTemp + 3 && !isMonitorModeOn) { // If too hot, turn on cooler + cooler fan
     // if inside is 3*F hotter than target, turn off heater, turn on cooler
     cooler.toggleCooler(ON);
     cooler.toggleCoolerFan(ON);

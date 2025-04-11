@@ -14,11 +14,13 @@ class Display {
     void initializeDisplay();
     void redBtnPushed();
     void blueBtnPushed();
+    void monitorModeBtnPushed();
 
     bool isBtnPushed(int x1, int y1, int x2, int y2);
 
     void updateDisplay_btnRed();
     void updateDisplay_btnBlue();
+    void updateDisplay_btnMonitorMode();
 
     void updateDisplay_indoorTemp(int indoorTemp);
     void updateDisplay_outdoorTemp(int outdoorTemp);

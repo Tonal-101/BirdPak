@@ -107,17 +107,17 @@ Speaker::Speaker(int speakerPin) {
 }
 
 void Speaker::notif_tempReached() {
-  tone(_speakerPin, _E5);
-  delay(70);
-  noTone(_speakerPin);
-  delay(50);
+  // tone(_speakerPin, _E6);
+  // delay(70);
+  // noTone(_speakerPin);
+  // delay(50);
 
-  tone(_speakerPin, _E5);
-  delay(70);
-  noTone(_speakerPin);
-  delay(50);
+  // tone(_speakerPin, _E6);
+  // delay(70);
+  // noTone(_speakerPin);
+  // delay(50);
   
-  tone(_speakerPin, _E5);
+  tone(_speakerPin, _E4);
   delay(70);
   noTone(_speakerPin);
   delay(50);
