@@ -203,27 +203,50 @@ void checkReachedTargetTemp() {
       speaker.notif_tempReached(); // notify user when target temp is reached
       playNotif = false; // so notification sound won't constantly play
     } 
-    heater.toggleHeater(OFF);
-    cooler.toggleCooler(OFF);
-  } else if(indoorTemp < targetTemp - 3 && !isMonitorModeOn) { // If too cold, turn on heater + heater fan
+    toggleHeatModule(OFF);
+    toggleCoolerModule(OFF);
+  } else if(indoorTemp < targetTemp) { // If too cold, turn on heater + heater fan
     // If inside is 3*F colder than target, turn on heater, turn off cooler
 
-    // Why 3*F exactly? Because 5*F seemed like too much, and I sure as hell
+    // Why 1*F exactly? Because 5*F seemed like too much, and I sure as hell
     // don't want the heater and cooler flipping on and off for split seconds
-    heater.toggleHeater(ON);
-    heater.toggleHeaterFan(ON);
-
+    toggleHeatModule(ON);
+    toggleCoolerModule(OFF);
+    playNotif = true;
+  } else if(indoorTemp > targetTemp) { // If too hot, turn on cooler + cooler fan
+    // if inside is 3*F hotter than target, turn off heater, turn on cooler
+    toggleCoolerModule(ON);
+    toggleHeatModule(OFF);
+    playNotif = true;
+  }
+  
+  if(isMonitorModeOn) {
+    // if Monitor Mode is on, turn off all external devices
+    // Heater fan is left on for ventilation
+    heater.toggleHeater(OFF);
     cooler.toggleCooler(OFF);
     cooler.toggleCoolerFan(OFF);
-    playNotif = true;
-  } else if(indoorTemp > targetTemp + 3 && !isMonitorModeOn) { // If too hot, turn on cooler + cooler fan
-    // if inside is 3*F hotter than target, turn off heater, turn on cooler
-    cooler.toggleCooler(ON);
-    cooler.toggleCoolerFan(ON);
+    heater.toggleHeaterFan(ON); // Leave on for ventilation
+  }
+}
 
+void toggleHeatModule(bool onOff) {
+  if(onOff) {
+    heater.toggleHeater(ON);
+    heater.toggleHeaterFan(ON);
+  } else {
     heater.toggleHeater(OFF);
     heater.toggleHeaterFan(OFF);
-    playNotif = true;
+  }
+}
+
+void toggleCoolerModule(bool onOff) {
+  if(onOff) {
+    cooler.toggleCooler(ON);
+    cooler.toggleCoolerFan(ON);
+  } else {
+    cooler.toggleCooler(OFF);
+    cooler.toggleCoolerFan(OFF);
   }
 }
 
